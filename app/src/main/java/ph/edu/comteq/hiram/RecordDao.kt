@@ -15,6 +15,15 @@ interface RecordDao {
     @Delete
     suspend fun delete(record: Record)
 
+    @Query("""
+    UPDATE records
+    SET status = 'Returned', dueInfo = :dueInfo, returnedOn = :returnedOn
+    WHERE id = :recordId """
+    )
+    suspend fun markReturned(
+        recordId: Int, dueInfo: String, returnedOn: String
+    ): Int
+
     @Query("SELECT * FROM records ORDER BY id DESC")
     fun observeAll(): Flow<List<Record>>
 }

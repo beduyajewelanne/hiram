@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class RecordViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = RecordDatabase.getInstance(application).recordDao()
@@ -27,6 +30,15 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     fun deleteRecord(record: Record){
         viewModelScope.launch {
             dao.delete(record)
+        }
+    }
+
+    fun markReturned(record: Record){
+        viewModelScope.launch {
+            val today = LocalDate.now()
+            val returnedOn =today.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH))
+            val shortDate =today.format(DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH))
+            dao.markReturned(record.id, "Settled - $shortDate", returnedOn)
         }
     }
 }

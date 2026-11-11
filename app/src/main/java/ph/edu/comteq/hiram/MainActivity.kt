@@ -87,9 +87,13 @@ class MainActivity : ComponentActivity() {
                         val recordId = navBackStackEntry.arguments?.getInt("recordId")
                         val record = recordList.find { it.id == recordId }
                         if (record != null) {
-                            RecordDetailsScreen(record, navController, darkTheme){
-                                recordViewModel.deleteRecord(record)
-                            }
+                            RecordDetailsScreen(
+                                record = record,
+                                navController = navController,
+                                darkTheme = darkTheme,
+                                onDelete = { recordViewModel.deleteRecord(record) },
+                                onMarkReturned = { recordViewModel.markReturned(record) }
+                            )
                         }
                     }
                     composable("settings") {
@@ -789,7 +793,7 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme: Boolean, onDelete: () -> Unit) {
+fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme: Boolean, onDelete: () -> Unit, onMarkReturned: () -> Unit) {
     val bg =
         if (darkTheme) Color(0xFF222222)
         else Color(0xFFF6F5F1)
@@ -1005,6 +1009,7 @@ fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme:
             } else {
                 Button(
                     onClick = {
+                        onMarkReturned()
                         scope.launch {
                             snackbarHostState.showSnackbar("${recordName(record)} marked as returned.")
                         }

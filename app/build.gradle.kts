@@ -37,9 +37,11 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    implementation("androidx.room:room-runtime:2.8.5")
+    implementation("androidx.room:room-ktx:2.8.5")
+    ksp("androidx.room:room-compiler:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)

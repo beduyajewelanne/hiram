@@ -36,13 +36,19 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val recordList = populateRecordList()
+            val recordViewModel: RecordViewModel = viewModel()
+            val recordList by recordViewModel.records.collectAsStateWithLifecycle()
             val navController = rememberNavController()
             var themeMode by rememberSaveable { mutableStateOf("Light") }
             val darkTheme = themeMode == "Dark"
@@ -58,7 +64,7 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(recordList, navController, darkTheme)
                     }
                     composable("add") {
-                        AddEditScreen(null, navController, darkTheme)
+                        AddEditScreen(null, navController, darkTheme) { newRecord -> recordViewModel.addRecord(newRecord) }
                     }
                     composable(
                         route = "edit/{recordId}",
@@ -68,7 +74,9 @@ class MainActivity : ComponentActivity() {
                     ) { navBackStackEntry ->
                         val recordId = navBackStackEntry.arguments?.getInt("recordId")
                         val record = recordList.find { it.id == recordId }
-                        AddEditScreen(record, navController, darkTheme)
+                        AddEditScreen(record, navController, darkTheme){
+                            //TODO
+                        }
                     }
                     composable(
                         route = "details/{recordId}",
@@ -125,7 +133,7 @@ fun HomeScreen(records: List<Record>, navController: NavController, darkTheme: B
         "Returned" -> records.filter { it.status == "Returned" }
         else -> records.sortedBy { it.status == "Returned" }
     }
-    val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy"))
+    val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH))
 
     Scaffold(
         containerColor = bg,
@@ -353,7 +361,7 @@ fun HomeScreen(records: List<Record>, navController: NavController, darkTheme: B
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Boolean) {
+fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Boolean, onSave: (Record) -> Unit) {
     val bg =
         if (darkTheme) Color(0xFF222222)
         else Color(0xFFF6F5F1)
@@ -368,6 +376,7 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
         else Color(0xFFB3261E)
 
     val isEdit = record != null
+    val context = LocalContext.current
 
     var kind by remember { mutableStateOf(record?.kind ?: "Item") }
     var type by remember { mutableStateOf(record?.type ?: "Lent") }
@@ -676,6 +685,24 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
                 onClick = {
                     showErrors = true
                     if (!hasError) {
+                        onSave(
+                            Record(
+                                id = record?.id ?: 0,
+                                kind = kind,
+                                title = if (kind == "Item") title.trim() else "",
+                                amount = if (kind == "Money") amount.toDouble() else 0.0,
+                                person = person.trim(),
+                                type = type,
+                                dueDate = dueDate,
+                                dueInfo = "",
+                                status = "Active",
+                                note = note.trim(),
+                                returnedOn = ""
+                            )
+                        )
+                        if (!isEdit){
+                            Toast.makeText(context, "Record Saved.", Toast.LENGTH_SHORT).show()
+                        }
                         navController.navigateUp()
                     }
                 },
@@ -730,7 +757,7 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
                             dueDate = Instant.ofEpochMilli(millis)
                                 .atZone(ZoneOffset.UTC)
                                 .toLocalDate()
-                                .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+                                .format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH))
                         }
                         showPicker = false
                     },

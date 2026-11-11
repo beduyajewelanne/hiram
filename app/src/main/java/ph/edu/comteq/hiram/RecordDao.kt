@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 
@@ -14,6 +15,9 @@ interface RecordDao {
 
     @Delete
     suspend fun delete(record: Record)
+
+    @Update
+    suspend fun update(record: Record)
 
     @Query("""
     UPDATE records

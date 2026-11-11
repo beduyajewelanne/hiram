@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                         val recordId = navBackStackEntry.arguments?.getInt("recordId")
                         val record = recordList.find { it.id == recordId }
                         AddEditScreen(record, navController, darkTheme){
-                            //TODO
+                            updated -> recordViewModel.updateRecord(updated)
                         }
                     }
                     composable(
@@ -706,9 +706,11 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
                                 returnedOn = ""
                             )
                         )
-                        if (!isEdit){
-                            Toast.makeText(context, "Record Saved.", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(
+                            context,
+                            if (isEdit) "Changes saved" else "Record saved.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         navController.navigateUp()
                     }
                 },

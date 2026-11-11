@@ -27,6 +27,13 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun updateRecord(record: Record){
+        viewModelScope.launch {
+            val toSave = if (record.status == "Returned") record else record.withDueStatus()
+            dao.update(toSave)
+        }
+    }
+
     fun deleteRecord(record: Record){
         viewModelScope.launch {
             dao.delete(record)

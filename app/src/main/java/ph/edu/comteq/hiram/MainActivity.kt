@@ -87,7 +87,9 @@ class MainActivity : ComponentActivity() {
                         val recordId = navBackStackEntry.arguments?.getInt("recordId")
                         val record = recordList.find { it.id == recordId }
                         if (record != null) {
-                            RecordDetailsScreen(record, navController, darkTheme)
+                            RecordDetailsScreen(record, navController, darkTheme){
+                                recordViewModel.deleteRecord(record)
+                            }
                         }
                     }
                     composable("settings") {
@@ -787,7 +789,7 @@ fun AddEditScreen(record: Record?, navController: NavController, darkTheme: Bool
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme: Boolean) {
+fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme: Boolean, onDelete: () -> Unit) {
     val bg =
         if (darkTheme) Color(0xFF222222)
         else Color(0xFFF6F5F1)
@@ -806,6 +808,7 @@ fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme:
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val returned = record.status == "Returned"
@@ -1076,6 +1079,8 @@ fun RecordDetailsScreen(record: Record, navController: NavController, darkTheme:
                 Button(
                     onClick = {
                         showDeleteDialog = false
+                        onDelete()
+                        Toast.makeText(context, "Record deleted.", Toast.LENGTH_SHORT).show()
                         navController.navigateUp()
                     },
                     shape = RectangleShape,

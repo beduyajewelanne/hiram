@@ -23,4 +23,10 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
             dao.insert(record.withDueStatus())
         }
     }
+
+    fun deleteRecord(record: Record){
+        viewModelScope.launch {
+            dao.delete(record)
+        }
+    }
 }

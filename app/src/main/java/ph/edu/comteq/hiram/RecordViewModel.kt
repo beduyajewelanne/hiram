@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -15,6 +16,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     private val dao = RecordDatabase.getInstance(application).recordDao()
 
     val records: StateFlow<List<Record>> = dao.observeAll()
+        .map { list -> list.map { it.withDueStatus() } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -29,8 +31,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
 
     fun updateRecord(record: Record){
         viewModelScope.launch {
-            val toSave = if (record.status == "Returned") record else record.withDueStatus()
-            dao.update(toSave)
+            dao.update(record.withDueStatus())
         }
     }
 

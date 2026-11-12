@@ -133,11 +133,15 @@ fun HomeScreen(records: List<Record>, navController: NavController, darkTheme: B
     val owed = active.filter { it.kind == "Money" && it.type == "Lent" }.sumOf { it.amount }
     val owe = active.filter { it.kind == "Money" && it.type == "Borrowed" }.sumOf { it.amount }
 
+    val byDue = compareBy<Record> { it.dueLocalDate() ?: LocalDate.MAX }
+
     val shown = when (filter) {
-        "Lent" -> active.filter { it.type == "Lent" }
-        "Borrowed" -> active.filter { it.type == "Borrowed" }
+        "Lent" -> active.filter { it.type == "Lent" }.sortedWith(byDue)
+        "Borrowed" -> active.filter { it.type == "Borrowed" }.sortedWith(byDue)
         "Returned" -> records.filter { it.status == "Returned" }
-        else -> records.sortedBy { it.status == "Returned" }
+        else -> records.sortedWith (
+            compareBy<Record> { it.status == "Returned" }.then(byDue)
+        )
     }
     val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH))
 
